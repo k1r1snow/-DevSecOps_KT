@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Task manager</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 25px; }
+        .wrap { max-width: 1050px; margin: 0 auto; }
+        h1 { margin: 0 0 20px; font-size: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .card { background: #1e293b; padding: 18px; border-radius: 12px; border: 1px solid #334155; }
+        .card h3 { margin: 0 0 8px; font-size: 14px; color: #94a3b8; }
+        .card .val { font-size: 26px; font-weight: bold; color: #38bdf8; }
+        .card a { display: inline-block; margin-top: 8px; font-size: 12px; color: #60a5fa; text-decoration: none; }
+        .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+        .panel { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .row { display: flex; gap: 10px; margin-bottom: 15px; }
+        input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; }
+        button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: #fff; }
+        .btn-add { background: #2563eb; }
+        .btn-edit { background: #d97706; padding: 6px 10px; font-size: 12px; }
+        .btn-del { background: #dc2626; padding: 6px 10px; font-size: 12px; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; font-size: 14px; }
+        .badge { background: #22c55e; color: #052e16; padding: 4px 12px; border-radius: 99px; font-size: 13px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>
+        <span id="t_title"></span>
+        <span class="badge" id="healthBadge">API: UP</span>
+    </h1>
+
+    <div class="cards">
+        <div class="card">
+            <h3 id="t_c1"></h3>
+            <div class="val" id="taskCount">0</div>
+            <a href="/tasks" target="_blank" id="t_l1"></a>
+        </div>
+        <div class="card">
+            <h3 id="t_c2"></h3>
+            <div class="val" id="analyticsVal">0</div>
+            <a href="http://localhost:8081/" target="_blank" id="t_l2"></a>
+        </div>
+        <div class="card">
+            <h3 id="t_c3"></h3>
+            <div class="val" id="notifCount">0</div>
+            <a href="http://localhost:8082/" target="_blank" id="t_l3"></a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h2 style="margin-top:0;font-size:18px;" id="t_p1"></h2>
+            <div class="row">
+                <input type="text" id="taskInput" onkeydown="if(event.key==='Enter')addTask()">
+                <button class="btn-add" onclick="addTask()" id="t_btnAdd"></button>
+            </div>
+            <ul id="taskList"></ul>
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-top:0;font-size:18px;" id="t_p2"></h2>
+            <ul id="notifList"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const TXT = {
+        title: "\uD83D\uDE80 \u041F\u0430\u043D\u0435\u043B\u044C \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0437\u0430\u0434\u0430\u0447\u0430\u043C\u0438 (DevSecOps)",
+        c1: "\uD83D\uDCCB \u0417\u0430\u0434\u0430\u0447 \u0432 PostgreSQL (8080)",
+        c2: "\uD83D\uDCCA \u0421\u0447\u0451\u0442\u0447\u0438\u043A \u0430\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0438 (8081)",
+        c3: "\uD83D\uDD14 \u0412\u0441\u0435\u0433\u043E \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0439 (8082)",
+        l1: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C JSON /tasks \u2197",
+        l2: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C GUI \u0430\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0438 (8081) \u2197",
+        l3: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C GUI \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0439 (8082) \u2197",
+        p1: "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0430\u043C\u0438 (CRUD)",
+        p2: "\uD83D\uDD14 \u0416\u0443\u0440\u043D\u0430\u043B \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0439",
+        ph: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438...",
+        add: "+ \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C",
+        edit: "\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C",
+        del: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
+        emptyTasks: "\u0417\u0430\u0434\u0430\u0447 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442",
+        emptyNotif: "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0439 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442",
+        promptEdit: "\u041D\u043E\u0432\u043E\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0437\u0430\u0434\u0430\u0447\u0438:"
+    };
+
+    document.getElementById('t_title').innerText = TXT.title;
+    document.getElementById('t_c1').innerText = TXT.c1;
+    document.getElementById('t_c2').innerText = TXT.c2;
+    document.getElementById('t_c3').innerText = TXT.c3;
+    document.getElementById('t_l1').innerText = TXT.l1;
+    document.getElementById('t_l2').innerText = TXT.l2;
+    document.getElementById('t_l3').innerText = TXT.l3;
+    document.getElementById('t_p1').innerText = TXT.p1;
+    document.getElementById('t_p2').innerText = TXT.p2;
+    document.getElementById('taskInput').placeholder = TXT.ph;
+    document.getElementById('t_btnAdd').innerText = TXT.add;
+
+    async function refreshAll() {
+        try {
+            const h = await (await fetch('/health')).json();
+            document.getElementById('healthBadge').innerText = 'API: ' + (h.status || 'UP');
+        } catch {}
+
+        const tasks = await (await fetch('/tasks')).json();
+        document.getElementById('taskCount').innerText = tasks.length;
+        const tl = document.getElementById('taskList');
+        tl.innerHTML = tasks.length ? '' : `<li style="color:#64748b">${TXT.emptyTasks}</li>`;
+        tasks.forEach(t => {
+            tl.innerHTML += `<li>
+                <span><b>#${t.id}</b> ? ${t.title}</span>
+                <div>
+                    <button class="btn-edit" onclick="editTask(${t.id}, '${t.title.replace(/'/g, "\\'")}')">${TXT.edit}</button>
+                    <button class="btn-del" onclick="delTask(${t.id})">${TXT.del}</button>
+                </div>
+            </li>`;
+        });
+
+        try {
+            const aData = await (await fetch('http://localhost:8081/analytics')).json();
+            document.getElementById('analyticsVal').innerText = aData.count ?? aData.eventsCount ?? aData.total ?? JSON.stringify(aData);
+        } catch {
+            document.getElementById('analyticsVal').innerText = ':8081';
+        }
+
+        try {
+            const nData = await (await fetch('http://localhost:8082/notifications')).json();
+            document.getElementById('notifCount').innerText = nData.length;
+            const nl = document.getElementById('notifList');
+            nl.innerHTML = nData.length ? '' : `<li style="color:#64748b">${TXT.emptyNotif}</li>`;
+            nData.slice().reverse().forEach(n => {
+                nl.innerHTML += `<li>\uD83D\uDD14 ${typeof n === 'string' ? n : JSON.stringify(n)}</li>`;
+            });
+        } catch {
+            document.getElementById('notifCount').innerText = ':8082';
+        }
+    }
+
+    async function addTask() {
+        const inp = document.getElementById('taskInput');
+        if (!inp.value.trim()) return;
+        await fetch('/tasks', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title: inp.value}) });
+        inp.value = '';
+        refreshAll();
+    }
+
+    async function editTask(id, oldTitle) {
+        const title = prompt(TXT.promptEdit, oldTitle);
+        if (!title) return;
+        await fetch('/tasks/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title}) });
+        refreshAll();
+    }
+
+    async function delTask(id) {
+        await fetch('/tasks/' + id, { method: 'DELETE' });
+        refreshAll();
+    }
+
+    refreshAll();
+</script>
+</body>
+</html>
+

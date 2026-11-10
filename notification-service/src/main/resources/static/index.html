@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"><title>Notification Service (8082)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; display: flex; justify-content: center; padding-top: 50px; }
+        .card { background: #1e293b; padding: 25px; border-radius: 12px; width: 550px; border: 1px solid #334155; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #334155; }
+        a, button { display: inline-block; margin-top: 15px; padding: 9px 14px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>&#128276; &#1057;&#1077;&#1088;&#1074;&#1080;&#1089; &#1091;&#1074;&#1077;&#1076;&#1086;&#1084;&#1083;&#1077;&#1085;&#1080;&#1081; (:8082)</h2>
+    <ul id="list"></ul>
+    <button onclick="load()">&#128260; &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;</button>
+    <a href="http://localhost:8080/">&#11013; &#1053;&#1072; &#1075;&#1083;&#1072;&#1074;&#1085;&#1091;&#1102; (8080)</a>
+</div>
+<script>
+    async function load() {
+        const data = await (await fetch('/notifications')).json();
+        const ul = document.getElementById('list');
+        ul.innerHTML = data.length ? '' : '<li>&#1059;&#1074;&#1077;&#1076;&#1086;&#1084;&#1083;&#1077;&#1085;&#1080;&#1081; &#1087;&#1086;&#1082;&#1072; &#1085;&#1077;&#1090;</li>';
+        data.slice().reverse().forEach(n => ul.innerHTML += `<li>&#128276; ${n}</li>`);
+    }
+    load();
+</script>
+</body>
+</html>

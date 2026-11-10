@@ -1,12 +1,15 @@
 package com.example.task_api;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +20,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class TaskController {
 
 	private final TaskRepository taskRepository;
-	private final RestTemplate restTemplate = new RestTemplate();
+	private final RestTemplate restTemplate;
 	private final String notificationServiceUrl;
 	private final String analyticsServiceUrl;
 
@@ -28,6 +32,8 @@ public class TaskController {
 			@Value("${services.notification.url}") String notificationServiceUrl,
 			@Value("${services.analytics.url}") String analyticsServiceUrl) {
 		this.taskRepository = taskRepository;
+		this.restTemplate = new RestTemplate();
+		this.restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 		this.notificationServiceUrl = notificationServiceUrl;
 		this.analyticsServiceUrl = analyticsServiceUrl;
 	}
