@@ -56,7 +56,7 @@
 1. Убедитесь, что запущен **Docker Desktop**.
 2. В корне проекта выполните команду:
    ```powershell
-
+    
    docker compose up -d --build --scale task-api=3
 ## Cтатус
 docker compose ps
