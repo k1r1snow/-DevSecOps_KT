@@ -1,5 +1,6 @@
 package com.example.task_api;
 
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,15 @@ public class TaskController {
 	@GetMapping("/health")
 	public Map<String, String> health() {
 		return Map.of("status", "UP");
+	}
+
+	@GetMapping("/container-id")
+	public String getContainerId() {
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		} catch (Exception e) {
+			return "unknown-container";
+		}
 	}
 
 	@GetMapping("/tasks")
